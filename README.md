@@ -1,4 +1,5 @@
-# Genetic_Architecture
+# Inferring the genetic architecture and extent of negative selection of human complex traits
+
 This repository contains scripts associated with the manuscript titled "Inferring the genetic architecture and extent of negative selection of human complex traits" (in prep)
 
 ## ABC_method
