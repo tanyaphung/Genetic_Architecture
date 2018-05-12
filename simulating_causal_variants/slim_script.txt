@@ -1,0 +1,65 @@
+initialize() {
+	// scaling factor. 10 makes simulation 10x faster
+	// this is defined by the master script, do not change here
+    defineConstant("simScalFac", 1);
+    
+    // sample size of vcf file to be output at the end
+    defineConstant("sampleSize", 100);
+    
+    // initialize mutation rate
+    initializeMutationRate(1.5e-8 * simScalFac);
+    
+    // sel. coeff. for CNC from Torgerson:
+	// alpha = 0.0415, beta = 640   (i.e. beta is about 0.25 of nonsynonymous estimate of boyko)
+	// initalize m1 mutation type: gamma del cnc
+	initializeMutationType("m1", 0.5, "g", -0.0015272 * simScalFac, 0.0415);  // i.e. beta=-0.0368
+	
+	// currently this is default, but when set to F
+	// does not remove fixed derived variants
+	m1.convertToSubstitution = T;
+    
+    // initialize genomic element g1
+    // only composed of gamma del cnc
+	initializeGenomicElementType("g1", c(m1), c(1.0));
+    
+    // uniform chromosome of length 100 kB with uniform recombination
+	initializeGenomicElement(g1, 0, 99999);
+	initializeRecombinationRate(1e-8 * simScalFac);   
+}
+
+1 early() { // burn in ancestral for 10Na generations
+    newSize = asInteger(7310/simScalFac);
+    sim.addSubpop("p1", newSize); // ancestral size
+}
+
+// At generation 10Na (which is equal to 73100 generations because the African ancestral population is 7310)
+73100 early() { // growth in ancestral Afr at 148 kYa
+    newSize = asInteger(p1.individualCount * (14474/7310));
+    p1.setSubpopulationSize(newSize);
+}
+
+76980 early() { // bottleneck in europeans starting 51 kYa
+    newSize = asInteger(p1.individualCount * (1861/14474));
+    p1.setSubpopulationSize(1861);
+}
+
+78100 early() {  // beginning of first epoch of growth starting 23 kYa
+    newSize = asInteger(p1.individualCount * (1032/1861));
+    p1.setSubpopulationSize(1032);
+}
+
+78101:78815 early() { // first epoch of growth 23 kYa to 5.1 kYa
+    newSize = asInteger(p1.individualCount * 1.00307);
+    p1.setSubpopulationSize(newSize);
+}
+
+78816:79020 early() { // second epoch of growth 5.1 kYa to present
+    newSize = asInteger(p1.individualCount * 1.0195);
+    p1.setSubpopulationSize(newSize);
+}
+
+79020 late() { // output SLiM file 
+    p1.outputSample(2 * 503, replace=F, filePath="slim_output/return_503_EUR/return_503_EUR_" + simnum + ".slim");
+}
+
+
